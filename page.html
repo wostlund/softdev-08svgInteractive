@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>HW#7 Animation</title>
+  </head>
+  <body>
+    <svg xmlns = "http://www.w3.org/2000/svg" id="svg" height = "750" width = "750" style = "border: 1px solid;" version = "1.1"></svg>
+    <button id="clear" name="clear">Clear</button>
+      <button id="move" name="move">Move</button>
+    <script>
+        var svg = document.getElementById("svg");
+        var clear = document.getElementById("clear");
+        var move = document.getElementById("move");
+        var circles = [];
+        var vx = [];
+        var vy = [];
+        var i = 0;
+        var state = false;
+
+	document.getElementById("clear").addEventListener('click', function(e){
+	    svg.innerHTML = "";
+	});
+        function drawCircle(x, y){
+            var circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+	        circle.setAttribute("r", 25);
+	        circle.setAttribute("cx", x);
+	        circle.setAttribute("cy", y);
+            circle.setAttribute("i", i);
+            circle.setAttribute("state", "1")
+	        circle.setAttribute("fill", "goldenrod");
+            circle.addEventListener('click', function(e){
+               if(e.target == this){
+                   
+                   if(this.getAttribute("state") == "1"){
+                        this.setAttribute('fill', 'lightsteelblue'); 
+                        this.setAttribute('state', '2');
+                        console.log(e.target);
+                        e.stopPropagation();
+                    }else{
+                        var h = parseInt(this.getAttribute("i"));
+                        svg.removeChild(this);
+                        var x = drawCircle(Math.round(Math.random() * 698 + 26), Math.round(Math.random() * 698) + 26);
+                        svg.appendChild(x);
+                        circles[h] = x; 
+                        e.stopPropagation();
+                    }
+               }
+            });
+            return circle;
+        }
+        
+        function Move(){
+            var k;
+            for (k = 0; k < circles.length; k++){
+                var x = circles[k].getAttribute("cx");
+                //console.log(svg);
+                var y = circles[k].getAttribute("cy");
+                if(x > 725 ||  x < 25){
+                    vx[k] *= -1;
+                }
+                if(y > 725 ||  y < 25){
+                    vy[k] *= -1;
+                }
+                x = parseInt(x) + vx[k];
+                y = parseInt(y) + vy[k];
+                circles[k].setAttribute("cx", x);
+                circles[k].setAttribute("cy", y);
+            }
+            if(state){
+                var animationFrame = window.requestAnimationFrame(Move);
+            }
+        }
+        
+        svg.addEventListener('click', function(e){
+            var x = drawCircle(event.offsetX, event.offsetY)
+            svg.appendChild(x);
+            circles = circles.concat([x]); 
+            vx = vx.concat([1]);
+            vy = vy.concat([1]);
+            i++;
+        });
+        
+        clear.addEventListener('click', function(e){
+            svg.innerHTML = "";
+            circles = [];
+            vx = [];
+            vy = [];
+            state = false;
+        });
+        
+        move.addEventListener('click', function(e){
+            state = true;
+            Move();
+        });
+        
+        
+    </script>
+  </body>
+</html>
