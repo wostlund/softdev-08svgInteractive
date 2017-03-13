@@ -4,7 +4,7 @@
     <title>HW#7 Animation</title>
   </head>
   <body>
-    <svg xmlns = "http://www.w3.org/2000/svg" id="svg" height = "750" width = "750" style = "border: 1px solid;" version = "1.1"></svg>
+    <svg xmlns = "http://www.w3.org/2000/svg" id="svg" height = "750" width = "1000" style = "border: 1px solid;" version = "1.1"></svg>
     <button id="clear" name="clear">Clear</button>
       <button id="move" name="move">Move</button>
     <script>
@@ -14,18 +14,24 @@
         var circles = [];
         var vx = [];
         var vy = [];
+        var isNew = [];
         var i = 0;
         var state = false;
 
 	document.getElementById("clear").addEventListener('click', function(e){
 	    svg.innerHTML = "";
 	});
-        function drawCircle(x, y){
+        function drawCircle(x, y, r, idNum){
             var circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-	        circle.setAttribute("r", 25);
+	        circle.setAttribute("r", r);
 	        circle.setAttribute("cx", x);
 	        circle.setAttribute("cy", y);
-            circle.setAttribute("i", i);
+            circle.setAttribute("i", idNum);
+            if(x > 375){
+                circle.setAttribute("side", "left");
+            }else{
+                circle.setAttribute("side", "right");
+            }
             circle.setAttribute("state", "1")
 	        circle.setAttribute("fill", "goldenrod");
             circle.addEventListener('click', function(e){
@@ -39,9 +45,10 @@
                     }else{
                         var h = parseInt(this.getAttribute("i"));
                         svg.removeChild(this);
-                        var x = drawCircle(Math.round(Math.random() * 698 + 26), Math.round(Math.random() * 698) + 26);
+                        var x = drawCircle(Math.round(Math.random() * (998 - 2*r) + r + 1), Math.round(Math.random() * (998 - 2*r) + r + 1), r, h);
                         svg.appendChild(x);
-                        circles[h] = x; 
+                        circles[h] = x;
+                        isNew[h] = false;
                         e.stopPropagation();
                     }
                }
@@ -52,14 +59,51 @@
         function Move(){
             var k;
             for (k = 0; k < circles.length; k++){
-                var x = circles[k].getAttribute("cx");
+                if(circles[k] == null){
+                    continue;
+                }
+                try{
+                    var x = circles[k].getAttribute("cx");
+                    var r = parseInt(circles[k].getAttribute("r"));
+                }catch(err){
+                    continue;
+                }
+                if(r == 0){
+                    svg.removeChild(circles[k]);
+                    circles[k] = null;
+                    continue;
+                }
                 //console.log(svg);
                 var y = circles[k].getAttribute("cy");
-                if(x > 725 ||  x < 25){
+                if(x > 1000 - r ||  x < r){
                     vx[k] *= -1;
+                    isNew[k] = false;
                 }
-                if(y > 725 ||  y < 25){
+                if(y > 750 - r ||  y < r){
                     vy[k] *= -1;
+                }
+                if(circles[k].getAttribute("side") == "right" && Math.round(x) == 500 && !isNew[k]){
+                    circles[k].setAttribute("r", r/2);
+                    circles[k].setAttribute("side", "left");
+                    var c = drawCircle(x, y, r/2, i);
+                    svg.appendChild(c);
+                    c.setAttribute("side", "right");
+                    circles = circles.concat([c]);
+                    vx = vx.concat([vx[k] * -1]);
+                    vy = vy.concat([vy[k] * -1]);
+                    isNew = isNew.concat([true]);
+                    i++;
+                }else if(circles[k].getAttribute("side") == "left" && Math.round(x) == 500  && !isNew[k]){
+                    circles[k].setAttribute("r", r/2);
+                    circles[k].setAttribute("side", "right");
+                    var c = drawCircle(x, y, r/2, i);
+                    svg.appendChild(c);
+                    c.setAttribute("side", "left");
+                    circles = circles.concat([c]);
+                    vx = vx.concat([vx[k] * -1]);
+                    vy = vy.concat([vy[k] * -1]);
+                    isNew = isNew.concat([true]);
+                    i++;
                 }
                 x = parseInt(x) + vx[k];
                 y = parseInt(y) + vy[k];
@@ -72,11 +116,12 @@
         }
         
         svg.addEventListener('click', function(e){
-            var x = drawCircle(event.offsetX, event.offsetY)
+            var x = drawCircle(event.offsetX, event.offsetY, 50, i)
             svg.appendChild(x);
             circles = circles.concat([x]); 
             vx = vx.concat([1]);
             vy = vy.concat([1]);
+            isNew = isNew.concat([false]);
             i++;
         });
         
@@ -85,6 +130,8 @@
             circles = [];
             vx = [];
             vy = [];
+            i = 0;
+            isNew = 0;
             state = false;
         });
         
